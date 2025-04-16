@@ -2,8 +2,8 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from src.models import db, User, Farm, bcrypt
-from src.api import api
+from models import db, User, Farm, bcrypt
+from api import api
 
 app = Flask(__name__)
 
@@ -130,6 +130,11 @@ def get_farm_threshold(farm_id):
         return jsonify({"error": "Farm not found or unauthorized"}), 404
 
     return jsonify({"farm_id": farm.id, "threshold": farm.threshold})
+
+
+@app.route("/health")
+def health():
+    return {"status": "ok"}, 200
 
 
 api.init_app(app)
