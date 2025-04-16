@@ -34,7 +34,7 @@ jobs:
 
       # === Deploy USER SERVICE ===
       - name: Deploy User Service
-        if: contains(github.event.head_commit.message, 'user_service') || github.event_name == 'workflow_dispatch'
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
         run: |
           IMAGE_URI=${{ secrets.ECR_REPO_URI_USER_SERVICE }}:latest
           docker buildx build --load -t $IMAGE_URI ./user_service
@@ -46,7 +46,7 @@ jobs:
 
       # === Deploy SENSOR SERVICE ===
       - name: Deploy Sensor Service
-        if: contains(github.event.head_commit.message, 'sensor_service') || github.event_name == 'workflow_dispatch'
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
         run: |
           IMAGE_URI=${{ secrets.ECR_REPO_URI_SENSOR_SERVICE }}:latest
           docker buildx build --load -t $IMAGE_URI ./sensor_service
@@ -58,7 +58,7 @@ jobs:
 
       # === Deploy IRRIGATION SERVICE ===
       - name: Deploy Irrigation Service
-        if: contains(github.event.head_commit.message, 'irrigation_service') || github.event_name == 'workflow_dispatch'
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
         run: |
           IMAGE_URI=${{ secrets.ECR_REPO_URI_IRRIGATION_SERVICE }}:latest
           docker buildx build --load -t $IMAGE_URI ./irrigation_service
