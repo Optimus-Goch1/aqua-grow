@@ -5,6 +5,8 @@ description = ""
 authors = [
     {name = "Ogo"}
 ]
+
+packages = [{ include = "src" }]
 #readme = "README.md"
 requires-python = "^3.12"
 dependencies = [
