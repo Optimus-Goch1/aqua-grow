@@ -6,7 +6,10 @@ authors = [
     "Ogochukwu"
 ]
 
-packages = [{ include = "src" }]
+#packages = [
+#  { include = "user_service", from = "src" }
+#]
+
 
 
 [tool.poetry.dependencies]
