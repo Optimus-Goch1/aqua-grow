@@ -14,13 +14,17 @@ SQLALCHEMY_DATABASE_URI = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_P
 
 # Configuration
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JWT_SECRET_KEY"] = "0ce69303dd65ea3f3b1f0e66bfdf773c0e99ce5e28feb25039d577212c659f98"
 app.config['JWT_VERIFY_SUB'] = False
 
 db.init_app(app)
 migrate = Migrate(app, db)
 jwt = JWTManager(app)
+
+@app.before_first_request
+def create_tables():
+    db.create_all()
 
 @app.route('/signup', methods=['POST'])
 def signup():
