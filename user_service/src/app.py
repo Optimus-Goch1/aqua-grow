@@ -22,9 +22,6 @@ db.init_app(app)
 migrate = Migrate(app, db)
 jwt = JWTManager(app)
 
-@app.before_first_request
-def create_tables():
-    db.create_all()
 
 @app.route('/signup', methods=['POST'])
 def signup():
@@ -145,6 +142,8 @@ def get_farm_threshold(farm_id):
 def health():
     return {"status": "ok"}, 200
 
+with app.app_context():
+    db.create_all()
 
 api.init_app(app)
 
