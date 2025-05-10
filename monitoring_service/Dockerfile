@@ -1,31 +1,31 @@
-# Base image
 FROM python:3.10-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y curl build-essential && apt-get clean
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV POETRY_VERSION=1.7.1
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y curl build-essential && apt-get clean
-
 # Install Poetry
-RUN curl -sSL https://install.python-poetry.org | python3 -
-ENV PATH="/root/.local/bin:$PATH"
+RUN curl -sSL https://install.python-poetry.org | python3 - && \
+    ln -s /root/.local/bin/poetry /usr/local/bin/poetry
 
-# Set work directory
 WORKDIR /app
 
-# Copy project files
+# Copy dependency files first for Docker caching
 COPY pyproject.toml poetry.lock ./
-RUN poetry config virtualenvs.create false \
- && poetry install --no-interaction --no-ansi
 
-# Copy rest of the code
-COPY . .
+# Install dependencies globally (no venv)
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-ansi
 
-# Expose port
+# Copy source code
+COPY src/ ./src/
+
+# Expose port for Flask
 EXPOSE 5001
 
-# Run the app
-CMD ["python", "app.py"]
+# Run the service
+CMD ["python", "src/app.py"]

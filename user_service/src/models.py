@@ -26,5 +26,6 @@ class Farm(db.Model):
     name = db.Column(db.String(100), unique=True, nullable=False)
     location = db.Column(db.String(200), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    threshold = db.Column(db.Float, nullable=True)
+    threshold = db.Column(db.Float, nullable=True) #TODO: add an upper and a lower threshold for each property being monitored
     esp32_id = db.Column(db.String(50), unique=True, nullable=False)
+

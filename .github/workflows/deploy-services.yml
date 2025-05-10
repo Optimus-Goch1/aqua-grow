@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'user_service/**'
-      - 'sensor_service/**'
+      - 'monitoring_service/**'
       - 'irrigation_service/**'
   workflow_dispatch:  # allows manual trigger from GitHub Actions UI
 
@@ -44,16 +44,16 @@ jobs:
             --service ${{ secrets.ECS_SERVICE_USER }} \
             --force-new-deployment
 
-      # === Deploy SENSOR SERVICE ===
+      # === Deploy MONITORING SERVICE ===
       - name: Deploy Sensor Service
         if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
         run: |
-          IMAGE_URI=${{ secrets.ECR_REPO_URI_SENSOR_SERVICE }}:latest
+          IMAGE_URI=${{ secrets.ECR_REPO_URI_MONITORING_SERVICE }}:latest
           docker buildx build --load -t $IMAGE_URI ./sensor_service
           docker push $IMAGE_URI
           aws ecs update-service \
             --cluster ${{ secrets.ECS_CLUSTER_NAME }} \
-            --service ${{ secrets.ECS_SERVICE_SENSOR }} \
+            --service ${{ secrets.ECS_SERVICE_MONITORING }} \
             --force-new-deployment
 
       # === Deploy IRRIGATION SERVICE ===
