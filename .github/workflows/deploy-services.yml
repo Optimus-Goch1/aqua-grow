@@ -49,7 +49,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
         run: |
           IMAGE_URI=${{ secrets.ECR_REPO_URI_MONITORING_SERVICE }}:latest
-          docker buildx build --load -t $IMAGE_URI ./sensor_service
+          docker buildx build --load -t $IMAGE_URI ./monitoring_service
           docker push $IMAGE_URI
           aws ecs update-service \
             --cluster ${{ secrets.ECS_CLUSTER_NAME }} \
