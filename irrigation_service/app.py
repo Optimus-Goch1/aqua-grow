@@ -34,6 +34,8 @@ API_KEY = os.getenv("API_KEY")
 client = mqtt.Client()
 client.connect(MQTT_BROKER, MQTT_PORT)
 
+cache = {}
+
 def control_irrigation(esp32_id, action):
     """Publishes ON/OFF commands to the irrigation system."""
     message = json.dumps({
@@ -51,6 +53,7 @@ def get_threshold_from_user_service(esp32_id):
         response = requests.get(url, headers=headers, timeout=5)
 
         if response.status_code == 200:
+            cache[esp32_id] = response.json()
             return response.json()  # Return parsed threshold data
         else:
             app.logger.warning(
@@ -72,7 +75,11 @@ def on_message(mqtt_client, userdata, msg):
         app.logger.debug(f"Received payload: {payload}")
 
         # Fetch the thresholds from User Management Service
-        threshold = get_threshold_from_user_service(esp32_id)
+        if esp32_id in cache:
+            threshold = cache[esp32_id]
+        else:
+            threshold = get_threshold_from_user_service(esp32_id)
+
         temperature_upper_threshold = threshold.get("temperature_upper_threshold", None)
         temperature_lower_threshold = threshold.get("temperature_lower_threshold", None)
         moisture_upper_threshold = threshold.get("moisture_upper_threshold")
