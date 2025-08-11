@@ -22,10 +22,10 @@ RUN poetry config virtualenvs.create false \
  && poetry install --no-interaction --no-ansi
 
 # Copy rest of the code
-COPY . .
+COPY src/ ./src/
 
 # Expose port
-EXPOSE 5003
+EXPOSE 5002
 
 # Run the app
-CMD ["python", "app.py"]
+CMD ["python", "src/app.py"]
