@@ -1,89 +1,120 @@
 import json
+import os
+
 import requests
 import paho.mqtt.client as mqtt
 from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
-from api import api
+from dotenv import load_dotenv
+import logging
+
+
 
 app = Flask(__name__)
+load_dotenv()
 
-app.config["JWT_SECRET_KEY"] = "0ce69303dd65ea3f3b1f0e66bfdf773c0e99ce5e28feb25039d577212c659f98"
+logging.basicConfig(level=logging.DEBUG)  # Make sure debug messages are shown
+app.logger.setLevel(logging.DEBUG)        # Set app's logger to debug
+
+
+
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 
 jwt = JWTManager(app)
 
 # MQTT Broker Config
-MQTT_BROKER = "192.168.1.100"
-MQTT_PORT = 1883
-TOPIC_SENSOR = "farm/sensor"
-TOPIC_IRRIGATION = "farm/irrigate"
-USER_SERVICE_URL = "http://localhost:5001"
+MQTT_BROKER = os.getenv("MQTT_BROKER")
+MQTT_PORT = int(os.getenv("MQTT_PORT"))
+MONITORING_TOPIC = os.getenv("MONITORING_TOPIC")
+IRRIGATION_TOPIC = os.getenv("IRRIGATION_TOPIC")
+USER_SERVICE_URL = os.getenv("USER_SERVICE_URL")
+API_KEY = os.getenv("API_KEY")
 
 # MQTT Client Setup
 client = mqtt.Client()
 client.connect(MQTT_BROKER, MQTT_PORT)
 
-def control_irrigation(farm_id, action):
+def control_irrigation(esp32_id, action):
     """Publishes ON/OFF commands to the irrigation system."""
-    payload = json.dumps({"farm_id": farm_id, "action": action})
-    client.publish(TOPIC_IRRIGATION, payload)
-    print(f"Irrigation {action} command sent for Farm {farm_id}")
+    message = json.dumps({
+        "esp32_id": esp32_id,
+        "action": action  # "1" for ON, "0" for OFF
+    })
+    client.publish(IRRIGATION_TOPIC, message)
 
-def get_threshold_from_user_service(farm_id):
+
+def get_threshold_from_user_service(esp32_id):
     """Fetches the irrigation threshold for a farm from User Management Service."""
     try:
-        response = requests.get(f"{USER_SERVICE_URL}/farms/{farm_id}/threshold")
-        if response.status_code == 200:
-            return response.json().get("threshold")
-    except requests.RequestException:
-        pass
-    return None
+        url = f"{USER_SERVICE_URL}/farms/threshold/{esp32_id}"
+        headers = {"X-API-KEY": API_KEY}
+        response = requests.get(url, headers=headers, timeout=5)
 
-def on_message(client, userdata, msg):
+        if response.status_code == 200:
+            return response.json()  # Return parsed threshold data
+        else:
+            app.logger.warning(
+                f"Failed to fetch threshold for farm {esp32_id}. "
+                f"Status: {response.status_code}, Response: {response.text}"
+            )
+            return None
+
+    except requests.RequestException as e:
+        app.logger.error(f"Error fetching threshold from User Service: {e}")
+        return None
+
+def on_message(mqtt_client, userdata, msg):
     """Handles incoming sensor data and triggers irrigation if needed."""
     try:
         payload = json.loads(msg.payload.decode())
-        farm_id = payload.get("farm_id")
+        esp32_id = payload.get("esp32_id")
         moisture = payload.get("moisture")
+        app.logger.debug(f"Received payload: {payload}")
 
-        # Fetch threshold from User Management Service
-        threshold = get_threshold_from_user_service(farm_id)
-        if threshold is None:
-            print(f"No threshold set for Farm {farm_id}, skipping irrigation check.")
-            return
+        # Fetch the thresholds from User Management Service
+        threshold = get_threshold_from_user_service(esp32_id)
+        temperature_upper_threshold = threshold.get("temperature_upper_threshold", None)
+        temperature_lower_threshold = threshold.get("temperature_lower_threshold", None)
+        moisture_upper_threshold = threshold.get("moisture_upper_threshold")
+        moisture_lower_threshold = threshold.get("moisture_lower_threshold")
+
+
 
         # Determine irrigation action
-        if moisture < threshold:
-            control_irrigation(farm_id, "ON")
-        else:
-            control_irrigation(farm_id, "OFF")
+        if moisture < moisture_lower_threshold:
+            control_irrigation(esp32_id, "1")
+        elif moisture >= moisture_upper_threshold:
+            control_irrigation(esp32_id, "0")
 
     except Exception as e:
         print(f"Error processing MQTT message: {e}")
-@app.route('/irrigate/manual', methods=['POST'])
+@app.route('/irrigation/toggle/<string:esp32_id>', methods=['POST'])
 @jwt_required()
-def manual_irrigation():
+def manual_irrigation(esp32_id):
     """Allows users to manually start or stop irrigation."""
+    user_id = get_jwt_identity()
     data = request.json
-    farm_id = data.get("farm_id")
     action = data.get("action")  # "ON" or "OFF"
 
-    if action not in ["ON", "OFF"]:
-        return jsonify({"error": "Invalid action"}), 400
+    app.logger.debug(f"Payload: {data}")
+    app.logger.debug(f"ESP32 ID: {esp32_id}")
 
-    control_irrigation(farm_id, action)
-    return jsonify({"message": f"Irrigation {action} command sent for Farm {farm_id}"}), 200
+    action = "1" if action is True else "0"
+
+    # if action not in ["ON", "OFF"]:
+    #     return jsonify({"error": "Invalid action"}), 400
+
+    control_irrigation(esp32_id, action)
+    return jsonify({"message": f"Irrigation {action} for Farm {esp32_id}"}), 200
 
 
 
 # Subscribe to MQTT sensor data
-client.subscribe(TOPIC_SENSOR)
+client.subscribe(MONITORING_TOPIC)
 client.on_message = on_message
 client.loop_start()
 
 
-api.init_app(app)
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5003)
+    app.run(debug=True, port=5002)

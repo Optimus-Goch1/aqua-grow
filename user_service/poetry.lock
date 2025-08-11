@@ -302,6 +302,21 @@ bcrypt = ">=3.1.1"
 Flask = "*"
 
 [[package]]
+name = "flask-cors"
+version = "6.0.0"
+description = "A Flask extension simplifying CORS support"
+optional = false
+python-versions = "<4.0,>=3.9"
+files = [
+    {file = "flask_cors-6.0.0-py3-none-any.whl", hash = "sha256:6332073356452343a8ccddbfec7befdc3fdd040141fe776ec9b94c262f058657"},
+    {file = "flask_cors-6.0.0.tar.gz", hash = "sha256:4592c1570246bf7beee96b74bc0adbbfcb1b0318f6ba05c412e8909eceec3393"},
+]
+
+[package.dependencies]
+flask = ">=0.9"
+Werkzeug = ">=0.7"
+
+[[package]]
 name = "flask-jwt-extended"
 version = "4.7.1"
 description = "Extended JWT integration with Flask"
@@ -1061,4 +1076,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "8a5eec1d8b3ef9e19006e93bcc0dcffc83d8f6c6a2c04e824ee93cffd3e85ed3"
+content-hash = "a06c5b43ba7fdf3334d447eeafb6fbb3a47e2a06c02d2fe026e0c9b7b673e658"
