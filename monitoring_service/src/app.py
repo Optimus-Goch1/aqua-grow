@@ -41,6 +41,8 @@ write_api = influx_client.write_api(write_options=SYNCHRONOUS)
 MQTT_BROKER = os.getenv("MQTT_BROKER")
 MQTT_PORT = int(os.getenv("MQTT_PORT"))
 MONITORING_TOPIC = os.getenv("MONITORING_TOPIC")
+MQTT_USERNAME = os.getenv("MQTT_USERNAME")
+MQTT_PASSWORD = os.getenv("MQTT_PASSWORD")
 
 def on_connect(mqtt_client, userdata, flags, rc):
     if rc == 0:
@@ -72,6 +74,8 @@ def on_message(mqtt_client, userdata, msg):
 
 # MQTT setup
 client = mqtt.Client()
+client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+
 client.on_connect = on_connect
 client.on_message = on_message
 client.connect(MQTT_BROKER, MQTT_PORT)

@@ -25,6 +25,8 @@ jwt = JWTManager(app)
 # MQTT Broker Config
 MQTT_BROKER = os.getenv("MQTT_BROKER")
 MQTT_PORT = int(os.getenv("MQTT_PORT"))
+MQTT_USERNAME = os.getenv("MQTT_USERNAME")
+MQTT_PASSWORD = os.getenv("MQTT_PASSWORD")
 MONITORING_TOPIC = os.getenv("MONITORING_TOPIC")
 IRRIGATION_TOPIC = os.getenv("IRRIGATION_TOPIC")
 USER_SERVICE_URL = os.getenv("USER_SERVICE_URL")
@@ -32,7 +34,10 @@ API_KEY = os.getenv("API_KEY")
 
 # MQTT Client Setup
 client = mqtt.Client()
+client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
 client.connect(MQTT_BROKER, MQTT_PORT)
+
+
 
 cache = {}
 
