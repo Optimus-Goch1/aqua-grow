@@ -11,7 +11,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
-from src.api import api
+from api import api
 
 # Load .env
 load_dotenv()
