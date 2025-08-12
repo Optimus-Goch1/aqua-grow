@@ -23,6 +23,7 @@ RUN poetry config virtualenvs.create false && \
 
 # Copy source code
 COPY src/ ./src/
+COPY migrations/ ./migrations/
 
 # Expose port for Flask
 EXPOSE 5000
