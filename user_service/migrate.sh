@@ -2,7 +2,7 @@
 set -e
 
 echo "Running database migrations..."
-flask --app src.app db upgrade
+flask --app src/app db upgrade
 
 echo "Migrations applied. Starting the service..."
-python src.app
+python src/app.py

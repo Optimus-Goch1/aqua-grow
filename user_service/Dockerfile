@@ -24,6 +24,8 @@ RUN poetry config virtualenvs.create false && \
 # Copy source code
 COPY src/ ./src/
 
+COPY migrations/ ./migrations/
+
 COPY migrate.sh ./migrate.sh
 RUN chmod +x ./migrate.sh
 
