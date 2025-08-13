@@ -126,7 +126,7 @@ client.subscribe(MONITORING_TOPIC)
 client.on_message = on_message
 client.loop_start()
 
-@app.route("/health")
+@app.route("/")
 def health():
     return {"status": "ok"}, 200
 

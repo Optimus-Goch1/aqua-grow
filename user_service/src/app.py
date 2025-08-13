@@ -40,7 +40,7 @@ jwt = JWTManager(app)
 api.init_app(app)
 
 # Health check endpoint
-@app.route("/health")
+@app.route("/")
 def health():
     return {"status": "ok"}, 200
 

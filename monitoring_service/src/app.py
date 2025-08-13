@@ -84,7 +84,7 @@ client.loop_start()
 # API
 api.init_app(app)
 
-@app.route("/health")
+@app.route("/")
 def health():
     return {"status": "ok"}, 200
 
