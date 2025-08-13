@@ -88,9 +88,6 @@ api.init_app(app)
 def health():
     return {"status": "The monitoring service is up and running"}, 200
 
-@app.route("/")
-def landing_page_route():
-    return {"AquaGrow Landing Page"}, 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True, port=5000)

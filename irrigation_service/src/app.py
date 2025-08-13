@@ -130,10 +130,6 @@ client.loop_start()
 def health():
     return {"status": "The irrigation service is up and running"}, 200
 
-@app.route("/")
-def landing_page_route():
-    return {"AquaGrow Landing Page"}, 200
-
 
 
 if __name__ == "__main__":
