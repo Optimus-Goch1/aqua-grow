@@ -126,9 +126,13 @@ client.subscribe(MONITORING_TOPIC)
 client.on_message = on_message
 client.loop_start()
 
-@app.route("/")
+@app.route("/irrigation")
 def health():
-    return {"status": "ok"}, 200
+    return {"status": "The irrigation service is up and running"}, 200
+
+@app.route("/")
+def landing_page_route():
+    return {"AquaGrow Landing Page"}, 200
 
 
 
