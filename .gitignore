@@ -26,3 +26,4 @@ instance/
 
 *.env
 */dist
+*/migrations

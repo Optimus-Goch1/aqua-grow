@@ -23,10 +23,13 @@ RUN poetry config virtualenvs.create false && \
 
 # Copy source code
 COPY src/ ./src/
-COPY migrations/ ./migrations/
+
+COPY migrate.sh ./migrate.sh
+RUN chmod +x ./migrate.sh
 
 # Expose port for Flask
 EXPOSE 5000
 
-# Run the service
-CMD ["python", "src/app.py"]
+#Run DB Migrations and start the app
+CMD ["./migrate.sh"]
+
