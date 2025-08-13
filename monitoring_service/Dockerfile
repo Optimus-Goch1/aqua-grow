@@ -25,7 +25,7 @@ RUN poetry config virtualenvs.create false && \
 COPY src/ ./src/
 
 # Expose port for Flask
-EXPOSE 5001
+EXPOSE 5000
 
 # Run the service
 CMD ["python", "src/app.py"]

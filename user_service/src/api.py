@@ -56,7 +56,7 @@ create_farm_model = farm_ns.model("CreateFarm", {
     "temperature_lower_threshold": fields.Float(required=False),
     "soil_type": fields.String(required=False),
     "crop_type": fields.String(required=False),
-    "size_unit": fields.String(required=False),
+    "size": fields.String(required=False),
 })
 
 threshold_model = farm_ns.model("Threshold", {
