@@ -40,13 +40,10 @@ jwt = JWTManager(app)
 api.init_app(app)
 
 # Health check endpoint
-@app.route("/users")
-def health():
-    return {"status": "The user service is up and running"}, 200
 
-@app.route("/")
-def landing_page_route():
-    return {"AquaGrow Landing Page"}, 200
+@app.route("/users")
+def health_check_route():
+    return {"status": "User service running"}, 200
 
 # Create tables if not using Flask-Migrate
 with app.app_context():
