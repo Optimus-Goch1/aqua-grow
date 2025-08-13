@@ -126,7 +126,11 @@ client.subscribe(MONITORING_TOPIC)
 client.on_message = on_message
 client.loop_start()
 
+@app.route("/health")
+def health():
+    return {"status": "ok"}, 200
+
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5002)
+    app.run(host="0.0.0.0", debug=False, port=5000)
