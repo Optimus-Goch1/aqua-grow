@@ -32,7 +32,7 @@ api = Api(
     title="Sensor Monitoring API",
     version="1.0",
     description="API for real-time farm sensor monitoring",
-    doc="sesnor/docs",
+    doc="/sensor/docs",
     authorizations=authorizations,
     security="Bearer"
 )
