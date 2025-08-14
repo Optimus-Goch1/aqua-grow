@@ -26,7 +26,7 @@ api = Api(
     title="User Management API",
     version="1.0",
     description="API for managing users and farms",
-    doc="/docs",
+    doc="user/docs",
     authorizations=authorizations,
     security="Bearer"
 )

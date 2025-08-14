@@ -41,7 +41,7 @@ api.init_app(app)
 
 # Health check endpoint
 
-@app.route("/users")
+@app.route("/user")
 def health_check_route():
     return {"status": "User service running"}, 200
 

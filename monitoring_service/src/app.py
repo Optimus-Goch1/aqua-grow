@@ -84,7 +84,7 @@ client.loop_start()
 # API
 api.init_app(app)
 
-@app.route("/sensors")
+@app.route("/sensor")
 def health():
     return {"status": "The monitoring service is up and running"}, 200
 
