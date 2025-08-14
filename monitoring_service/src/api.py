@@ -121,4 +121,4 @@ class SimulateSensor(Resource):
             return jsonify({"error": str(e)}), 500
 
 
-api.add_namespace(sensor_ns, path="sensor/sensors")
+api.add_namespace(sensor_ns, path="/sensor/sensors")

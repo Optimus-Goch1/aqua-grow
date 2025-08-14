@@ -243,5 +243,5 @@ class FarmDelete(Resource):
 
 
 
-api.add_namespace(user_ns, path="user/users")
-api.add_namespace(farm_ns, path="user/farms")
+api.add_namespace(user_ns, path="/user/users")
+api.add_namespace(farm_ns, path="/user/farms")
