@@ -138,30 +138,6 @@ Each service provides Swagger/OpenAPI documentation available at:
 #### Monitoring Service (`/sensor/sensor/`)
 #### Irrigation Service (`/irrigation/irrigation/`)
 
-## Database Schema
-
-### Farm Model
-The core entity representing an irrigation system:
-
-```python
-class Farm(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True, nullable=False)
-    location = db.Column(db.String(200), nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    esp32_id = db.Column(db.String(50), unique=True, nullable=False)
-    
-    # Irrigation thresholds
-    moisture_upper_threshold = db.Column(db.Float, nullable=True)
-    moisture_lower_threshold = db.Column(db.Float, nullable=True)
-    temperature_upper_threshold = db.Column(db.Float, nullable=True)
-    temperature_lower_threshold = db.Column(db.Float, nullable=True)
-    
-    # Farm metadata
-    soil_type = db.Column(db.String(50))
-    crop_type = db.Column(db.String(50))
-    size_unit = db.Column(db.String(20))
-```
 
 ## IoT Device Integration
 
