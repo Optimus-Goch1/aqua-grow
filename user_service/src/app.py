@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, Blueprint
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
@@ -37,12 +37,17 @@ migrate = Migrate(app, db)
 jwt = JWTManager(app)
 
 # Initialize API
-api.init_app(app)
+# Create blueprint for user service
+user_bp = Blueprint("user_bp", __name__, url_prefix="/user")
+
+api.init_app(user_bp)
+app.register_blueprint(user_bp)
+
 
 # Health check endpoint
 
 @app.route("/user")
-def health_check_route():
+def health():
     return {"status": "User service running"}, 200
 
 # Create tables if not using Flask-Migrate

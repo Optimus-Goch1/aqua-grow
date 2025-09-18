@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask_restx import Api, Resource, Namespace, fields
+from flask_restx import Api, Resource, Namespace, fields, reqparse
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
 from flask import request
 from models import User, Farm, db
@@ -15,7 +15,7 @@ load_dotenv()
 # Swagger auth setup
 authorizations = {
     'Bearer': {
-        'type': 'apiKey',
+        'type': 'jwtToken',
         'in': 'header',
         'name': 'Authorization',
         'description': 'Paste your JWT token here with **Bearer** prefix'
@@ -26,9 +26,18 @@ api = Api(
     title="User Management API",
     version="1.0",
     description="API for managing users and farms",
-    doc="/user/docs",
+    doc="/docs",
     authorizations=authorizations,
-    security="Bearer"
+    security="Bearer",
+)
+
+
+threshold_parser = reqparse.RequestParser()
+threshold_parser.add_argument(
+    'X-API-KEY',
+    location='headers',
+    required=True,
+    help="Your API key"
 )
 
 user_ns = Namespace("users", description="User operations")
@@ -114,25 +123,29 @@ class FarmCreate(Resource):
     def post(self):
         user_id = get_jwt_identity()
         data = request.json
-        logger.error(data)
-        if Farm.query.filter_by(esp32_id=data["esp32_id"]).first():
-            return {"error": "Register a new farm with a new ESP32"}, 400
-        farm = Farm(
-            name=data["farm_name"],
-            location=data["location"],
-            esp32_id=data["esp32_id"],
-            temperature_upper_threshold=parse_threshold(data.get("temperature_upper_threshold")),
-            temperature_lower_threshold=parse_threshold(data.get("temperature_lower_threshold")),
-            soil_type=data["soil_type"],
-            crop_type=data["crop_type"],
-            size_unit=data["size"],
-            moisture_upper_threshold=parse_threshold(data.get("moisture_upper_threshold")),
-            moisture_lower_threshold=parse_threshold(data.get("moisture_lower_threshold")),
-            user_id=user_id
-        )
-        db.session.add(farm)
-        db.session.commit()
-        return {"message": "Farm created successfully", "farm_id": farm.id}, 201
+
+        try:
+            if Farm.query.filter_by(esp32_id=data["esp32_id"]).first():
+                return {"error": "Register a new farm with a new ESP32"}, 400
+            farm = Farm(
+                name=data["farm_name"],
+                location=data["location"],
+                esp32_id=data["esp32_id"],
+                temperature_upper_threshold=parse_threshold(data.get("temperature_upper_threshold")),
+                temperature_lower_threshold=parse_threshold(data.get("temperature_lower_threshold")),
+                soil_type=data["soil_type"],
+                crop_type=data["crop_type"],
+                size_unit=data["size"],
+                moisture_upper_threshold=parse_threshold(data.get("moisture_upper_threshold")),
+                moisture_lower_threshold=parse_threshold(data.get("moisture_lower_threshold")),
+                user_id=user_id
+            )
+            db.session.add(farm)
+            db.session.commit()
+            return {"message": "Farm created successfully", "farm_id": farm.id}, 201
+        except Exception as e:
+            app.logger.error(f"Error creating farm: {e}")
+            return {"error": "Error creating farm"}, 500
 
 
 @farm_ns.route("/update_threshold/<int:farm_id>")
@@ -159,9 +172,12 @@ class UpdateFarmThreshold(Resource):
 
 @farm_ns.route("/threshold/<string:esp32_id>")
 class GetFarmThreshold(Resource):
+    @farm_ns.expect(threshold_parser)
     def get(self, esp32_id):
         api_key = request.headers.get("X-API-KEY")
         expected_key = os.getenv("API_KEY")
+
+        logger.info(f"API_KEY: {api_key}")
 
         if api_key != expected_key:
             return {"error": "Unauthorized"}, 401
@@ -243,5 +259,5 @@ class FarmDelete(Resource):
 
 
 
-api.add_namespace(user_ns, path="/user/users")
-api.add_namespace(farm_ns, path="/user/farms")
+api.add_namespace(user_ns, path="/users")
+api.add_namespace(farm_ns, path="/farms")

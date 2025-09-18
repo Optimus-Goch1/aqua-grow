@@ -47,13 +47,14 @@ def control_irrigation(esp32_id, action):
         "esp32_id": esp32_id,
         "action": action  # "1" for ON, "0" for OFF
     })
+    app.logger.debug(f"Publishing message: {message}")
     client.publish(IRRIGATION_TOPIC, message)
 
 
 def get_threshold_from_user_service(esp32_id):
     """Fetches the irrigation threshold for a farm from User Management Service."""
     try:
-        url = f"{USER_SERVICE_URL}/farms/threshold/{esp32_id}"
+        url = f"{USER_SERVICE_URL}/user/farms/threshold/{esp32_id}"
         headers = {"X-API-KEY": API_KEY}
         response = requests.get(url, headers=headers, timeout=5)
 
@@ -133,4 +134,4 @@ def health():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=False, port=5000)
+    app.run(host="0.0.0.0", debug=False, port=5002)

@@ -32,7 +32,7 @@ api = Api(
     title="Sensor Monitoring API",
     version="1.0",
     description="API for real-time farm sensor monitoring",
-    doc="/sensor/docs",
+    doc="/docs",
     authorizations=authorizations,
     security="Bearer"
 )
@@ -55,11 +55,10 @@ class SensorData(Resource):
     @sensor_ns.doc(security='Bearer')
     @jwt_required()
     def get(self, esp32_id):
-        esp32_id = str(esp32_id)
         query = f'''
         from(bucket: "{INFLUXDB_BUCKET}")
-          |> range(start: -30d)
-          |> filter(fn: (r) => r._measurement == "sensor_readings" and r.farm_id == "{str(eps32_id)}")
+          |> range(start: -1h)
+          |> filter(fn: (r) => r._measurement == "sensor_readings" and r.esp32_id == "{esp32_id}")
           |> last()
         '''
         try:
@@ -72,7 +71,6 @@ class SensorData(Resource):
             if not data:
                 return {"error": "No recent sensor data available"}, 404
 
-            data["farm_id"] = farm_id
             return data, 200
 
         except Exception as e:
@@ -121,4 +119,4 @@ class SimulateSensor(Resource):
             return jsonify({"error": str(e)}), 500
 
 
-api.add_namespace(sensor_ns, path="/sensor/sensors")
+api.add_namespace(sensor_ns, path="/sensors")

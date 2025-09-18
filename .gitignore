@@ -26,3 +26,8 @@ instance/
 
 *.env
 */dist
+/locust
+/gateway
+/mosquitto.conf
+/docker-compose.yml
+/passwordfile

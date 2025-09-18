@@ -5,7 +5,7 @@ from datetime import datetime
 
 import requests
 import paho.mqtt.client as mqtt
-from flask import Flask
+from flask import Flask, Blueprint
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -51,11 +51,33 @@ def on_connect(mqtt_client, userdata, flags, rc):
     else:
         app.logger.error(f"Failed to connect to MQTT Broker, return code {rc}")
 
+def map_moisture_to_percentage(raw_value):
+    """
+    Maps raw ADC sensor value to percentage.
+    Assumes:
+    - min_value = value when sensor is fully submerged (100% moisture)
+    - max_value = value when sensor is completely dry (0% moisture)
+    """
+
+
+    DRY = 650  # 0%
+    WET = 75 # 100%
+
+
+    # Map raw sensor reading to percentage
+    moisture_percent = ((DRY - raw_value) / (DRY - WET)) * 100
+    moisture_percent = max(0, min(100, moisture_percent))
+    return moisture_percent
+
+
+
 def on_message(mqtt_client, userdata, msg):
     try:
         payload = json.loads(msg.payload.decode())
         esp32_id = payload.get("esp32_id")
-        moisture = payload.get("moisture")
+        moisture = map_moisture_to_percentage(payload.get("moisture"))
+        raw_moisture = payload.get("moisture")
+        temperature = payload.get("temperature")
 
         if not esp32_id or moisture is None:
             app.logger.warning("Invalid sensor data received")
@@ -65,6 +87,8 @@ def on_message(mqtt_client, userdata, msg):
             Point("sensor_readings")
             .tag("esp32_id", esp32_id)
             .field("moisture", moisture)
+            .field("temperature", temperature)
+            .field("raw_moisture", raw_moisture)
         )
         write_api.write(bucket=INFLUXDB_BUCKET, record=point)
         app.logger.info(f"Data written for ESP32 {esp32_id} at")
@@ -82,7 +106,12 @@ client.connect(MQTT_BROKER, MQTT_PORT)
 client.loop_start()
 
 # API
-api.init_app(app)
+
+# Create blueprint for user service
+sensor_bp = Blueprint("sensor_bp", __name__, url_prefix="/sensor")
+api.init_app(sensor_bp)  # Swagger UI will now mount under /user/docs
+app.register_blueprint(sensor_bp)
+
 
 @app.route("/sensor")
 def health():
@@ -90,4 +119,4 @@ def health():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True, port=5000)
+    app.run(host="0.0.0.0", debug=True, port=5001)
